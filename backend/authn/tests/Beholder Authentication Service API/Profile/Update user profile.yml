@@ -1,0 +1,195 @@
+info:
+  name: Update user profile
+  type: http
+  seq: 2
+  tags:
+    - Profile
+
+http:
+  method: PUT
+  url: "{{baseUrl}}/profile"
+  body:
+    type: json
+    data: |-
+      {
+        "firstName": "John",
+        "lastName": "Doe",
+        "locale": "en-CA",
+        "timezone": "America/Toronto"
+      }
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+examples:
+  - name: 200 Response
+    description: Profile updated successfully
+    request:
+      url: "{{baseUrl}}/profile"
+      method: PUT
+      body:
+        type: json
+        data: |-
+          {
+            "firstName": "John",
+            "lastName": "Doe",
+            "locale": "en-CA",
+            "timezone": "America/Toronto"
+          }
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: ""
+  - name: 400 Response
+    description: Invalid request data
+    request:
+      url: "{{baseUrl}}/profile"
+      method: PUT
+      body:
+        type: json
+        data: |-
+          {
+            "firstName": "John",
+            "lastName": "Doe",
+            "locale": "en-CA",
+            "timezone": "America/Toronto"
+          }
+    response:
+      status: 400
+      statusText: Bad Request
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": "INVALID_CREDENTIALS",
+            "message": "The provided credentials are invalid",
+            "details": {}
+          }
+  - name: 401 Response
+    description: Unauthorized - Invalid or missing token
+    request:
+      url: "{{baseUrl}}/profile"
+      method: PUT
+      body:
+        type: json
+        data: |-
+          {
+            "firstName": "John",
+            "lastName": "Doe",
+            "locale": "en-CA",
+            "timezone": "America/Toronto"
+          }
+    response:
+      status: 401
+      statusText: Unauthorized
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": "INVALID_CREDENTIALS",
+            "message": "The provided credentials are invalid",
+            "details": {}
+          }
+  - name: 409 Response
+    description: Email already in use
+    request:
+      url: "{{baseUrl}}/profile"
+      method: PUT
+      body:
+        type: json
+        data: |-
+          {
+            "firstName": "John",
+            "lastName": "Doe",
+            "locale": "en-CA",
+            "timezone": "America/Toronto"
+          }
+    response:
+      status: 409
+      statusText: Conflict
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": "INVALID_CREDENTIALS",
+            "message": "The provided credentials are invalid",
+            "details": {}
+          }
+  - name: 500 Response
+    description: Internal server error
+    request:
+      url: "{{baseUrl}}/profile"
+      method: PUT
+      body:
+        type: json
+        data: |-
+          {
+            "firstName": "John",
+            "lastName": "Doe",
+            "locale": "en-CA",
+            "timezone": "America/Toronto"
+          }
+    response:
+      status: 500
+      statusText: Internal Server Error
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": "INVALID_CREDENTIALS",
+            "message": "The provided credentials are invalid",
+            "details": {}
+          }
+  - name: 503 Response
+    description: Service Temporarily Unavailable or Degraded
+    request:
+      url: "{{baseUrl}}/profile"
+      method: PUT
+      body:
+        type: json
+        data: |-
+          {
+            "firstName": "John",
+            "lastName": "Doe",
+            "locale": "en-CA",
+            "timezone": "America/Toronto"
+          }
+    response:
+      status: 503
+      statusText: Service Unavailable
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": "INVALID_CREDENTIALS",
+            "message": "The provided credentials are invalid",
+            "details": {}
+          }
+
+docs: Updates the authenticated user's profile information

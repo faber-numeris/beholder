@@ -1,0 +1,129 @@
+info:
+  name: Register a new user
+  type: http
+  seq: 1
+  tags:
+    - Authentication
+
+http:
+  method: POST
+  url: "{{baseUrl}}/authn/register"
+  body:
+    type: json
+    data: "{}"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+examples:
+  - name: 201 Response
+    description: User successfully registered
+    request:
+      url: "{{baseUrl}}/authn/register"
+      method: POST
+      body:
+        type: json
+        data: "{}"
+    response:
+      status: 201
+      statusText: Created
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: ""
+  - name: 400 Response
+    description: Invalid request data
+    request:
+      url: "{{baseUrl}}/authn/register"
+      method: POST
+      body:
+        type: json
+        data: "{}"
+    response:
+      status: 400
+      statusText: Bad Request
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": "INVALID_CREDENTIALS",
+            "message": "The provided credentials are invalid",
+            "details": {}
+          }
+  - name: 409 Response
+    description: User already exists
+    request:
+      url: "{{baseUrl}}/authn/register"
+      method: POST
+      body:
+        type: json
+        data: "{}"
+    response:
+      status: 409
+      statusText: Conflict
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": "INVALID_CREDENTIALS",
+            "message": "The provided credentials are invalid",
+            "details": {}
+          }
+  - name: 500 Response
+    description: Internal server error
+    request:
+      url: "{{baseUrl}}/authn/register"
+      method: POST
+      body:
+        type: json
+        data: "{}"
+    response:
+      status: 500
+      statusText: Internal Server Error
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": "INVALID_CREDENTIALS",
+            "message": "The provided credentials are invalid",
+            "details": {}
+          }
+  - name: 503 Response
+    description: Service Temporarily Unavailable or Degraded
+    request:
+      url: "{{baseUrl}}/authn/register"
+      method: POST
+      body:
+        type: json
+        data: "{}"
+    response:
+      status: 503
+      statusText: Service Unavailable
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": "INVALID_CREDENTIALS",
+            "message": "The provided credentials are invalid",
+            "details": {}
+          }
+
+docs: Creates a new user account with the provided credentials

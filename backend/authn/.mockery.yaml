@@ -1,0 +1,35 @@
+with-expecter: true
+filename: "mock_{{.InterfaceName}}.go"
+outpkg: "mocks"
+output: "internal/mocks"
+all: true
+recursive: true
+packages:
+  github.com/faber-numeris/beholder/authn/internal/ports/inbound:
+    config:
+      dir: "internal/mocks"
+    interfaces:
+      UserService:
+  github.com/faber-numeris/beholder/authn/internal/ports/outbound:
+    config:
+      dir: "internal/mocks"
+    interfaces:
+      UserRepository:
+      UserConfirmationRepository:
+      Mailer:
+      HashingService:
+
+  github.com/faber-numeris/beholder/authn/internal/adapters/outbound/postgres/gen:
+    config:
+      dir: "internal/mocks"
+    interfaces:
+      Querier:
+  github.com/faber-numeris/beholder/authn/internal/infrastructure/config:
+    config:
+      dir: "internal/mocks"
+    interfaces:
+      IServiceConfig:
+      IDatabaseConfig:
+      IMailConfig:
+      IAppConfig:
+

@@ -1,0 +1,159 @@
+info:
+  name: User login
+  type: http
+  seq: 3
+  tags:
+    - Authentication
+
+http:
+  method: POST
+  url: "{{baseUrl}}/authn/login"
+  body:
+    type: json
+    data: |-
+      {
+        "email": "user@example.com",
+        "password": "SecurePass123!"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+examples:
+  - name: 200 Response
+    description: Login successful
+    request:
+      url: "{{baseUrl}}/authn/login"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "email": "user@example.com",
+            "password": "SecurePass123!"
+          }
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "accessToken": "5f9a7b2c4e3d1a6f8b9c0e2d4f6a8c1b",
+            "tokenType": "Bearer",
+            "expiresIn": 3600,
+            "user": ""
+          }
+  - name: 400 Response
+    description: Invalid request data
+    request:
+      url: "{{baseUrl}}/authn/login"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "email": "user@example.com",
+            "password": "SecurePass123!"
+          }
+    response:
+      status: 400
+      statusText: Bad Request
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": "INVALID_CREDENTIALS",
+            "message": "The provided credentials are invalid",
+            "details": {}
+          }
+  - name: 401 Response
+    description: Invalid credentials
+    request:
+      url: "{{baseUrl}}/authn/login"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "email": "user@example.com",
+            "password": "SecurePass123!"
+          }
+    response:
+      status: 401
+      statusText: Unauthorized
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": "INVALID_CREDENTIALS",
+            "message": "The provided credentials are invalid",
+            "details": {}
+          }
+  - name: 500 Response
+    description: Internal server error
+    request:
+      url: "{{baseUrl}}/authn/login"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "email": "user@example.com",
+            "password": "SecurePass123!"
+          }
+    response:
+      status: 500
+      statusText: Internal Server Error
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": "INVALID_CREDENTIALS",
+            "message": "The provided credentials are invalid",
+            "details": {}
+          }
+  - name: 503 Response
+    description: Service Temporarily Unavailable or Degraded
+    request:
+      url: "{{baseUrl}}/authn/login"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "email": "user@example.com",
+            "password": "SecurePass123!"
+          }
+    response:
+      status: 503
+      statusText: Service Unavailable
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": "INVALID_CREDENTIALS",
+            "message": "The provided credentials are invalid",
+            "details": {}
+          }
+
+docs: Authenticates a user and returns an opaque access token

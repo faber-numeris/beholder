@@ -1,0 +1,4 @@
+name: Staging server
+variables:
+  - name: baseUrl
+    value: https://staging-api.example.com/v1

@@ -1,0 +1,53 @@
+services:
+  mailpit:
+    image: axllent/mailpit
+    container_name: mailpit_container
+    restart: unless-stopped
+    environment:
+      - MP_VERBOSE=true
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+
+  migration:
+    image: juhokoskela/goose:latest
+    container_name: migration_container
+    restart: "no"
+    entrypoint: ["goose", "-dir", "/migrations", "postgres", "postgres://postgres:postgres@postgres_db:5432/postgres?sslmode=disable", "up"]
+    volumes:
+      - ./authn/internal/adapters/outbound/postgres/migrations:/migrations
+    depends_on:
+      postgres_db:
+        condition: service_healthy
+
+
+  postgres_db:
+    image: postgres:14
+    container_name: postgres_container
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d postgres" ] # Command to check health
+      interval: 5s     # How often to run the check
+      timeout: 5s      # Max time allowed for the check to run
+      retries: 5       # Number of consecutive failures before marking as "unhealthy"
+      start_period: 10s # Grace period for initialization
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  fake-user-api:
+    build:
+      context: ./fake-data
+      dockerfile: Dockerfile
+    container_name: fake_user_api
+    ports:
+      - "3001:3001"
+
+volumes:
+  postgres_data:
+  fake_user_data:

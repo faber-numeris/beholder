@@ -1,0 +1,9 @@
+{
+  "name": "fake-user-generator",
+  "version": "1.0.0",
+  "main": "generate.js",
+  "dependencies": {
+    "@faker-js/faker": "^8.4.1",
+    "express": "^5.2.1"
+  }
+}

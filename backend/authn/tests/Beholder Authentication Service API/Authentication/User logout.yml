@@ -1,0 +1,91 @@
+info:
+  name: User logout
+  type: http
+  seq: 4
+  tags:
+    - Authentication
+
+http:
+  method: POST
+  url: "{{baseUrl}}/authn/logout"
+  auth:
+    type: bearer
+    token: "{{token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+examples:
+  - name: 204 Response
+    description: Logout successful
+    request:
+      url: "{{baseUrl}}/authn/logout"
+      method: POST
+    response:
+      status: 204
+      statusText: No Content
+      body:
+        type: text
+        data: ""
+  - name: 401 Response
+    description: Unauthorized - Invalid or missing token
+    request:
+      url: "{{baseUrl}}/authn/logout"
+      method: POST
+    response:
+      status: 401
+      statusText: Unauthorized
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": "INVALID_CREDENTIALS",
+            "message": "The provided credentials are invalid",
+            "details": {}
+          }
+  - name: 500 Response
+    description: Internal server error
+    request:
+      url: "{{baseUrl}}/authn/logout"
+      method: POST
+    response:
+      status: 500
+      statusText: Internal Server Error
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": "INVALID_CREDENTIALS",
+            "message": "The provided credentials are invalid",
+            "details": {}
+          }
+  - name: 503 Response
+    description: Service Temporarily Unavailable or Degraded
+    request:
+      url: "{{baseUrl}}/authn/logout"
+      method: POST
+    response:
+      status: 503
+      statusText: Service Unavailable
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "error": "INVALID_CREDENTIALS",
+            "message": "The provided credentials are invalid",
+            "details": {}
+          }
+
+docs: Invalidates the current user's access token

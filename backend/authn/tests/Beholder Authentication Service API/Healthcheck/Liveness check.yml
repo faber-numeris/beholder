@@ -1,0 +1,32 @@
+info:
+  name: Liveness check
+  type: http
+  seq: 1
+  tags:
+    - Healthcheck
+
+http:
+  method: GET
+  url: "{{baseUrl}}/live"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+examples:
+  - name: 200 Response
+    description: Liveness check successful
+    request:
+      url: "{{baseUrl}}/live"
+      method: GET
+    response:
+      status: 200
+      statusText: OK
+      body:
+        type: text
+        data: ""
+
+docs: Returns 200 OK if the process is running.
