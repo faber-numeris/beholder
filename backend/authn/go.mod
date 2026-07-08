@@ -1,4 +1,4 @@
-module github.com/faber-numeris/beholder/backend
+module github.com/faber-numeris/beholder/authn
 
 go 1.25
 

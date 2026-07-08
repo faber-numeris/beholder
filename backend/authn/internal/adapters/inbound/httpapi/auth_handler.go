@@ -6,11 +6,11 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/faber-numeris/beholder/backend/authn/internal/adapters/inbound/httpapi/gen"
-	"github.com/faber-numeris/beholder/backend/authn/internal/core/domain"
-	"github.com/faber-numeris/beholder/backend/authn/internal/platform/mapper/generated"
-	inboundport "github.com/faber-numeris/beholder/backend/authn/internal/ports/inbound"
-	outboundport "github.com/faber-numeris/beholder/backend/authn/internal/ports/outbound"
+	api "github.com/faber-numeris/beholder/authn/internal/adapters/inbound/httpapi/gen"
+	"github.com/faber-numeris/beholder/authn/internal/core/domain"
+	"github.com/faber-numeris/beholder/authn/internal/platform/mapper/generated"
+	inboundport "github.com/faber-numeris/beholder/authn/internal/ports/inbound"
+	outboundport "github.com/faber-numeris/beholder/authn/internal/ports/outbound"
 )
 
 type Handler struct {

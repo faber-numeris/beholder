@@ -5,7 +5,7 @@ package mocks
 import (
 	context "context"
 
-	gen2 "github.com/faber-numeris/beholder/backend/authn/internal/adapters/outbound/postgres/gen"
+	gen2 "github.com/faber-numeris/beholder/authn/internal/adapters/outbound/postgres/gen"
 	mock "github.com/stretchr/testify/mock"
 )
 

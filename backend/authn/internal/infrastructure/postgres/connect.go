@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/faber-numeris/beholder/backend/authn/internal/infrastructure/config"
+	"github.com/faber-numeris/beholder/authn/internal/infrastructure/config"
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"

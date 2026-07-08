@@ -4,10 +4,10 @@
 package generated
 
 import (
-	gen1 "github.com/faber-numeris/beholder/backend/authn/internal/adapters/inbound/httpapi/gen"
-	"github.com/faber-numeris/beholder/backend/authn/internal/adapters/outbound/postgres/gen"
-	"github.com/faber-numeris/beholder/backend/authn/internal/core/domain"
-	"github.com/faber-numeris/beholder/backend/authn/internal/platform/mapper/extensions"
+	gen1 "github.com/faber-numeris/beholder/authn/internal/adapters/inbound/httpapi/gen"
+	"github.com/faber-numeris/beholder/authn/internal/adapters/outbound/postgres/gen"
+	"github.com/faber-numeris/beholder/authn/internal/core/domain"
+	"github.com/faber-numeris/beholder/authn/internal/platform/mapper/extensions"
 	openapi_types "github.com/oapi-codegen/runtime/types"
 
 	"time"

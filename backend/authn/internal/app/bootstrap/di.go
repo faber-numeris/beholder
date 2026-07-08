@@ -4,12 +4,12 @@ import (
 	"context"
 	"log/slog"
 
-	postgresadapter2 "github.com/faber-numeris/beholder/backend/authn/internal/adapters/outbound/postgres"
-	"github.com/faber-numeris/beholder/backend/authn/internal/core/services"
-	"github.com/faber-numeris/beholder/backend/authn/internal/infrastructure/config"
-	infrapostgres "github.com/faber-numeris/beholder/backend/authn/internal/infrastructure/postgres"
-	"github.com/faber-numeris/beholder/backend/authn/internal/platform/util"
-	outboundport2 "github.com/faber-numeris/beholder/backend/authn/internal/ports/outbound"
+	postgresadapter2 "github.com/faber-numeris/beholder/authn/internal/adapters/outbound/postgres"
+	"github.com/faber-numeris/beholder/authn/internal/core/services"
+	"github.com/faber-numeris/beholder/authn/internal/infrastructure/config"
+	infrapostgres "github.com/faber-numeris/beholder/authn/internal/infrastructure/postgres"
+	"github.com/faber-numeris/beholder/authn/internal/platform/util"
+	outboundport2 "github.com/faber-numeris/beholder/authn/internal/ports/outbound"
 )
 
 func ProvideHashingService() outboundport2.HashingService {

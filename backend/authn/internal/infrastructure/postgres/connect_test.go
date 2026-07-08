@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/faber-numeris/beholder/backend/authn/internal/mocks"
+	"github.com/faber-numeris/beholder/authn/internal/mocks"
 	"github.com/stretchr/testify/assert"
 )
 

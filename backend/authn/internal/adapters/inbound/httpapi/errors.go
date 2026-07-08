@@ -4,8 +4,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/faber-numeris/beholder/backend/authn/internal/adapters/inbound/httpapi/gen"
-	"github.com/faber-numeris/beholder/backend/authn/internal/core/domain"
+	"github.com/faber-numeris/beholder/authn/internal/core/domain"
 )
 
 func MapError(err error) (int, api.Error) {

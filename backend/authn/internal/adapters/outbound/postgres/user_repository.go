@@ -5,8 +5,7 @@ import (
 	"database/sql"
 	"errors"
 
-	domain2 "github.com/faber-numeris/beholder/backend/authn/internal/core/domain"
-	"github.com/faber-numeris/beholder/backend/authn/internal/ports/outbound"
+	domain2 "github.com/faber-numeris/beholder/authn/internal/core/domain"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jmoiron/sqlx"

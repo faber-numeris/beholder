@@ -6,8 +6,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/faber-numeris/beholder/backend/authn/internal/core/domain"
-	"github.com/faber-numeris/beholder/backend/authn/internal/ports/outbound"
+	"github.com/faber-numeris/beholder/authn/internal/core/domain"
 	"github.com/jmoiron/sqlx"
 )
 

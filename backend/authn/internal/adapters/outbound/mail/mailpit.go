@@ -6,9 +6,8 @@ import (
 	"net/smtp"
 	"strings"
 
-	"github.com/faber-numeris/beholder/backend/authn/internal/core/domain"
-	"github.com/faber-numeris/beholder/backend/authn/internal/infrastructure/config"
-	"github.com/faber-numeris/beholder/backend/authn/internal/ports/outbound"
+	"github.com/faber-numeris/beholder/authn/internal/core/domain"
+	"github.com/faber-numeris/beholder/authn/internal/infrastructure/config"
 )
 
 // Verify at compile time that Mailpit implements outboundport.Mailer

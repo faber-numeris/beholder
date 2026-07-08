@@ -5,7 +5,7 @@ package mocks
 import (
 	context "context"
 
-	"github.com/faber-numeris/beholder/backend/authn/internal/core/domain"
+	"github.com/faber-numeris/beholder/authn/internal/core/domain"
 	mock "github.com/stretchr/testify/mock"
 )
 

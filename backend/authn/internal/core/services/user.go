@@ -9,9 +9,8 @@ import (
 	"log/slog"
 	"time"
 
-	domain2 "github.com/faber-numeris/beholder/backend/authn/internal/core/domain"
-	"github.com/faber-numeris/beholder/backend/authn/internal/ports/inbound"
-	outboundport2 "github.com/faber-numeris/beholder/backend/authn/internal/ports/outbound"
+	domain2 "github.com/faber-numeris/beholder/authn/internal/core/domain"
+	outboundport2 "github.com/faber-numeris/beholder/authn/internal/ports/outbound"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
 )

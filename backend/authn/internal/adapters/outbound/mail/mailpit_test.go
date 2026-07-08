@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/agiledragon/gomonkey/v2"
-	"github.com/faber-numeris/beholder/backend/authn/internal/core/domain"
-	"github.com/faber-numeris/beholder/backend/authn/internal/mocks"
+	"github.com/faber-numeris/beholder/authn/internal/core/domain"
+	"github.com/faber-numeris/beholder/authn/internal/mocks"
 	"github.com/stretchr/testify/assert"
 )
 

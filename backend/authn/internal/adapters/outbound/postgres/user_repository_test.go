@@ -8,8 +8,7 @@ import (
 	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/faber-numeris/beholder/backend/authn/internal/core/domain"
-	"github.com/faber-numeris/beholder/backend/authn/internal/ports/outbound"
+	"github.com/faber-numeris/beholder/authn/internal/core/domain"
 	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
 )

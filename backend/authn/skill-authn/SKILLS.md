@@ -1,3 +1,8 @@
+---
+name: skill-authn
+description: What it does + when to trigger it
+---
+
 # Beholder — Architecture & Conventions
 
 ## Hexagonal Architecture (Ports & Adapters)
@@ -10,7 +15,6 @@ internal/
 ├── ports/outbound/    # Outbound port interfaces (driven side)
 ├── adapters/inbound/  # Adapters implementing inbound ports (HTTP API, etc.)
 │   └── httpapi/
-│       └── gen/       # Generated ogen server code
 ├── adapters/outbound/ # Adapters implementing outbound ports (Postgres, Mail, etc.)
 │   └── postgres/
 │       ├── gen/       # Generated sqlc code

@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/faber-numeris/beholder/backend/authn/internal/core/domain"
+	"github.com/faber-numeris/beholder/authn/internal/core/domain"
 )
 
 // ListUsersParams contains parameters for listing users at the service level

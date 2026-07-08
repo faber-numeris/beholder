@@ -1,8 +1,7 @@
 package mail
 
 import (
-	"github.com/faber-numeris/beholder/backend/authn/internal/infrastructure/config"
-	"github.com/faber-numeris/beholder/backend/authn/internal/ports/outbound"
+	"github.com/faber-numeris/beholder/authn/internal/infrastructure/config"
 )
 
 // NewService creates a new mailer service

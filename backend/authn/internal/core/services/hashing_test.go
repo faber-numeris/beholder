@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/alexedwards/argon2id"
-	"github.com/faber-numeris/beholder/backend/authn/internal/core/services"
+	"github.com/faber-numeris/beholder/authn/internal/core/services"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"sync"
 
-	"github.com/faber-numeris/beholder/backend/authn/internal/adapters/outbound"
+	"github.com/faber-numeris/beholder/authn/internal/adapters/outbound"
 )
 
 type CheckFn func() bool

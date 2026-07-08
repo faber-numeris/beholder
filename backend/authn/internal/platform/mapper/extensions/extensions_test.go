@@ -3,9 +3,9 @@ package extensions
 import (
 	"testing"
 
-	"github.com/faber-numeris/beholder/backend/authn/internal/adapters/inbound/httpapi/gen"
-	"github.com/faber-numeris/beholder/backend/authn/internal/adapters/outbound/postgres/gen"
-	"github.com/faber-numeris/beholder/backend/authn/internal/core/domain"
+	"github.com/faber-numeris/beholder/authn/internal/adapters/inbound/httpapi/gen"
+	"github.com/faber-numeris/beholder/authn/internal/adapters/outbound/postgres/gen"
+	"github.com/faber-numeris/beholder/authn/internal/core/domain"
 	"github.com/stretchr/testify/assert"
 )
 

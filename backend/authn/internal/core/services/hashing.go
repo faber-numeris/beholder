@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/alexedwards/argon2id"
-	inboundport "github.com/faber-numeris/beholder/backend/authn/internal/ports/outbound"
+	inboundport "github.com/faber-numeris/beholder/authn/internal/ports/outbound"
 )
 
 type hashingService struct{}

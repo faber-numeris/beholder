@@ -3,7 +3,7 @@ package outboundport
 import (
 	"context"
 
-	"github.com/faber-numeris/beholder/backend/authn/internal/adapters/outbound"
+	"github.com/faber-numeris/beholder/authn/internal/adapters/outbound"
 )
 
 type HashingService interface {

@@ -6,8 +6,6 @@ import (
 	"log/slog"
 	"net/http"
 	"strings"
-
-	"github.com/faber-numeris/beholder/backend/authn/internal/adapters/inbound/httpapi/gen"
 )
 
 type userContextKey string

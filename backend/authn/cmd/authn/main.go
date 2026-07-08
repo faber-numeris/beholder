@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/faber-numeris/beholder/backend/authn/internal/app/bootstrap"
+	"github.com/faber-numeris/beholder/authn/internal/app/bootstrap"
 	"github.com/lmittmann/tint"
 )
 
