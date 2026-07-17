@@ -5,12 +5,13 @@ import (
 
 	"github.com/faber-numeris/beholder/authn/internal/adapters/outbound/postgres/gen"
 	"github.com/faber-numeris/beholder/authn/internal/core/domain"
+	"github.com/faber-numeris/foundation/beholder/api"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestExtensions(t *testing.T) {
 	t.Run("StringToULID", func(t *testing.T) {
-		assert.Equal(t, api.ULID("123"), StringToULID("123"))
+		assert.Equal(t, "123", StringToULID("123"))
 	})
 
 	t.Run("StringToOptString", func(t *testing.T) {

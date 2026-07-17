@@ -8,6 +8,8 @@ import (
 	"github.com/faber-numeris/beholder/authn/internal/core/domain"
 	"github.com/faber-numeris/beholder/authn/internal/core/services"
 	mocks2 "github.com/faber-numeris/beholder/authn/internal/mocks"
+	inboundport "github.com/faber-numeris/beholder/authn/internal/ports/inbound"
+	outboundport "github.com/faber-numeris/beholder/authn/internal/ports/outbound"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )

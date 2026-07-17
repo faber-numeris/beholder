@@ -23,3 +23,11 @@ migrate-all-up:
 
 migrate-all-down:
 	{{GOOSE}} -dir {{MIGRATION_DIR}} postgres "{{DATABASE_URL}}" down
+
+test:
+	go test ./...
+
+test-coverage:
+	go test -coverprofile=coverage.out ./...
+	go tool cover -func=coverage.out | tail -n 1
+	@go tool cover -func=coverage.out | tail -n 1 | awk '{print $$3}' | sed 's/%//' | awk '{if ($$1 < 90) exit 1}'

@@ -11,6 +11,7 @@ import (
 
 	"github.com/faber-numeris/beholder/authn/internal/core/domain"
 	"github.com/faber-numeris/beholder/authn/internal/mocks"
+	"github.com/faber-numeris/foundation/beholder/api"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"

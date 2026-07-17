@@ -19,6 +19,6 @@ func main() {
 
 	app := bootstrap.NewApp()
 	if err := app.Run(); err != nil {
-		slog.Error("Application error", "error", err)
+		panic(err)
 	}
 }

@@ -9,6 +9,7 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/faber-numeris/beholder/authn/internal/core/domain"
+	outboundport "github.com/faber-numeris/beholder/authn/internal/ports/outbound"
 	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
 )
