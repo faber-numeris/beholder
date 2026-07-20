@@ -1,7 +1,7 @@
 opencollection: 1.0.0
 
 info:
-  name: Beholder Authentication Service API
+  name: Luciole Authentication Service API
 bundled: false
 extensions:
   bruno:
