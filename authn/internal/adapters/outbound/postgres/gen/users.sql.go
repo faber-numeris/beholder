@@ -13,18 +13,56 @@ import (
 )
 
 const createUser = `-- name: CreateUser :one
-INSERT INTO users(email, password_hash)
-     VALUES ($1::TEXT, $2::TEXT)
-  RETURNING id, email, password_hash, first_name, last_name, locale, timezone, created_at, updated_at, deleted_at
+    INSERT INTO users(
+                      id,
+                      email,
+                      password_hash,
+                      first_name,
+                      last_name,
+                      locale,
+                      timezone,
+                      created_at,
+                      updated_at,
+                      deleted_at)
+    VALUES ($1::TEXT,
+            $2::TEXT,
+            $3::TEXT,
+            $4::TEXT,
+            $5::TEXT,
+            $6::TEXT,
+            $7::TEXT,
+            $8::TIMESTAMPTZ,
+            $9::TIMESTAMPTZ,
+            $10::TIMESTAMPTZ)
+    RETURNING id, email, password_hash, first_name, last_name, locale, timezone, created_at, updated_at, deleted_at
 `
 
 type CreateUserParams struct {
-	Email        string `json:"email"`
-	PasswordHash string `json:"password_hash"`
+	ID           string    `json:"id"`
+	Email        string    `json:"email"`
+	PasswordHash string    `json:"password_hash"`
+	FirstName    string    `json:"first_name"`
+	LastName     string    `json:"last_name"`
+	Locale       string    `json:"locale"`
+	Timezone     string    `json:"timezone"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
+	DeletedAt    time.Time `json:"deleted_at"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
-	row := q.db.QueryRow(ctx, createUser, arg.Email, arg.PasswordHash)
+	row := q.db.QueryRow(ctx, createUser,
+		arg.ID,
+		arg.Email,
+		arg.PasswordHash,
+		arg.FirstName,
+		arg.LastName,
+		arg.Locale,
+		arg.Timezone,
+		arg.CreatedAt,
+		arg.UpdatedAt,
+		arg.DeletedAt,
+	)
 	var i User
 	err := row.Scan(
 		&i.ID,
@@ -192,7 +230,7 @@ func (q *Queries) UpdatePassword(ctx context.Context, arg UpdatePasswordParams) 
 
 const updateUser = `-- name: UpdateUser :one
     UPDATE users
-       SET        email         = $1::TEXT,
+       SET email         = $1::TEXT,
            password_hash = $2::TEXT,
            first_name    = $3::TEXT,
            last_name     = $4::TEXT,
