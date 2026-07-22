@@ -2,40 +2,49 @@ package postgresadapter
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 
+	"github.com/faber-numeris/beholder/authn/internal/adapters/outbound/postgres/gen"
 	domain2 "github.com/faber-numeris/beholder/authn/internal/core/domain"
 	outboundport "github.com/faber-numeris/beholder/authn/internal/ports/outbound"
 	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/jmoiron/sqlx"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type userRepository struct {
-	db *sqlx.DB
+	db gen.Querier
 }
 
-func NewUserRepository(db *sqlx.DB) outboundport.UserRepository {
+func NewUserRepository(queries gen.Querier) outboundport.UserRepository {
 	return &userRepository{
-		db: db,
+		db: queries,
 	}
 }
 
 func (r *userRepository) Ping() bool {
-	if r.db == nil {
-		return false
-	}
-	err := r.db.Ping()
-	return err == nil
+	// TODO: request the actual database to verify if it is correctly working
+	return r.db != nil
 }
 
 func (r *userRepository) CreateUser(ctx context.Context, user *domain2.User, passwordHash string) (*domain2.User, error) {
-	query := `INSERT INTO users (email, password_hash) VALUES (?, ?) RETURNING id, email, password_hash, first_name, last_name, locale, timezone, created_at, updated_at, deleted_at`
-	query = r.db.Rebind(query)
+	var firstName, lastName, locale, timezone string
+	if user.Profile != nil {
+		firstName = user.Profile.FirstName
+		lastName = user.Profile.LastName
+		locale = user.Profile.Locale
+		timezone = user.Profile.Timezone
+	}
 
-	var row userRow
-	err := r.db.GetContext(ctx, &row, query, user.Email, passwordHash)
+	row, err := r.db.CreateUser(ctx, gen.CreateUserParams{
+		Email:        user.Email,
+		PasswordHash: passwordHash,
+		FirstName:    firstName,
+		LastName:     lastName,
+		Locale:       locale,
+		Timezone:     timezone,
+	})
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgerrcode.IsIntegrityConstraintViolation(pgErr.Code) {
@@ -48,13 +57,9 @@ func (r *userRepository) CreateUser(ctx context.Context, user *domain2.User, pas
 }
 
 func (r *userRepository) GetUserByID(ctx context.Context, id string) (*domain2.User, error) {
-	query := `SELECT id, email, password_hash, first_name, last_name, locale, timezone, created_at, updated_at, deleted_at FROM users WHERE id = ? LIMIT 1`
-	query = r.db.Rebind(query)
-
-	var row userRow
-	err := r.db.GetContext(ctx, &row, query, id)
+	row, err := r.db.GetUser(ctx, id)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, nil
 		}
 		return nil, err
@@ -64,13 +69,9 @@ func (r *userRepository) GetUserByID(ctx context.Context, id string) (*domain2.U
 }
 
 func (r *userRepository) GetUserByEmail(ctx context.Context, email string) (*domain2.User, error) {
-	query := `SELECT id, email, password_hash, first_name, last_name, locale, timezone, created_at, updated_at, deleted_at FROM users WHERE email = ? AND deleted_at IS NULL LIMIT 1`
-	query = r.db.Rebind(query)
-
-	var row userRow
-	err := r.db.GetContext(ctx, &row, query, email)
+	row, err := r.db.GetUserByEmail(ctx, email)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, nil
 		}
 		return nil, err
@@ -80,16 +81,9 @@ func (r *userRepository) GetUserByEmail(ctx context.Context, email string) (*dom
 }
 
 func (r *userRepository) GetUserCredentials(ctx context.Context, email string) (*domain2.UserCredentials, error) {
-	query := `SELECT email, password_hash FROM users WHERE email = ? AND deleted_at IS NULL LIMIT 1`
-	query = r.db.Rebind(query)
-
-	var row struct {
-		Email        string `db:"email"`
-		PasswordHash string `db:"password_hash"`
-	}
-	err := r.db.GetContext(ctx, &row, query, email)
+	row, err := r.db.GetUserByEmail(ctx, email)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, nil
 		}
 		return nil, err
@@ -110,39 +104,33 @@ func (r *userRepository) UpdateUser(ctx context.Context, user *domain2.User) err
 		timezone = user.Profile.Timezone
 	}
 
-	query := `UPDATE users SET email = ?, first_name = ?, last_name = ?, locale = ?, timezone = ?, updated_at = NOW() WHERE id = ?`
-	query = r.db.Rebind(query)
-
-	_, err := r.db.ExecContext(ctx, query, user.Email, firstName, lastName, locale, timezone, user.ID)
+	_, err := r.db.UpdateUser(ctx, gen.UpdateUserParams{
+		Email:     user.Email,
+		FirstName: firstName,
+		LastName:  lastName,
+		Locale:    locale,
+		Timezone:  timezone,
+		ID:        user.ID,
+	})
 	return err
 }
 
 func (r *userRepository) DeleteUser(ctx context.Context, id string) error {
-	query := `UPDATE users SET deleted_at = NOW() WHERE id = ?`
-	query = r.db.Rebind(query)
-
-	_, err := r.db.ExecContext(ctx, query, id)
-	return err
+	return r.db.DeleteUser(ctx, id)
 }
 
 func (r *userRepository) ListUsers(ctx context.Context, params *outboundport.ListUsersParams) ([]*domain2.User, error) {
-	query := `
-		SELECT id, email, password_hash, first_name, last_name, locale, timezone, created_at, updated_at, deleted_at
-		FROM users
-		WHERE (? IS NULL OR email = ?)
-		  AND (?::TIMESTAMPTZ IS NULL OR created_at >= ?)
-		  AND (?::TIMESTAMPTZ IS NULL OR created_at <= ?)
-		  AND (deleted_at IS NULL) = ?
-	`
-	query = r.db.Rebind(query)
+	var email pgtype.Text
+	if params.Email != nil {
+		email = pgtype.Text{String: *params.Email, Valid: true}
+	}
 
-	var rows []userRow
-	err := r.db.SelectContext(ctx, &rows, query,
-		params.Email, params.Email,
-		params.CreatedStartRange, params.CreatedStartRange,
-		params.CreatedEndRange, params.CreatedEndRange,
-		params.Active,
-	)
+	rows, err := r.db.ListUsers(ctx, gen.ListUsersParams{
+		Email:             email,
+		CreatedStartRange: params.CreatedStartRange,
+		CreatedEndRange:   params.CreatedEndRange,
+		Active:            params.Active,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -156,14 +144,14 @@ func (r *userRepository) ListUsers(ctx context.Context, params *outboundport.Lis
 }
 
 func (r *userRepository) UpdatePassword(ctx context.Context, userID string, passwordHash string) error {
-	query := `UPDATE users SET password_hash = ?, updated_at = NOW() WHERE id = ?`
-	query = r.db.Rebind(query)
-
-	_, err := r.db.ExecContext(ctx, query, passwordHash, userID)
-	return err
+	return r.db.UpdatePassword(ctx, gen.UpdatePasswordParams{
+		Passwordhash: passwordHash,
+		Userid:       userID,
+	})
 }
 
-func (r *userRepository) toDomain(row userRow) *domain2.User {
+func (r *userRepository) toDomain(row gen.User) *domain2.User {
+	// TODO: use goverter here
 	return &domain2.User{
 		ID:    row.ID,
 		Email: row.Email,

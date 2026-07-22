@@ -14,7 +14,9 @@ sql:
         emit_exact_table_names: false
         overrides:
           - db_type: "timestamptz"
-            go_type: "time.Time"
+            go_type:
+              type: "time.Time"
+              pointer: true
             nullable: true
           - db_type: "timestamptz"
             go_type: "time.Time"

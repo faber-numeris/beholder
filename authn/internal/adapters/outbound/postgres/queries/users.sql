@@ -39,19 +39,29 @@ SELECT *
      AND (deleted_at is null) = @active::BOOLEAN;
 
 -- name: CreateUser :one
-INSERT INTO users(email, password_hash)
-     VALUES (@email::TEXT, @password_hash::TEXT)
-  RETURNING *;
+    INSERT INTO users(
+                      email,
+                      password_hash,
+                      first_name,
+                      last_name,
+                      locale,
+                      timezone)
+    VALUES (@email::TEXT,
+            @password_hash::TEXT,
+            @first_name::TEXT,
+            @last_name::TEXT,
+            @locale::TEXT,
+            @timezone::TEXT)
+    RETURNING *;
 
 -- name: UpdateUser :one
     UPDATE users
-       SET email         = @email::TEXT,
-           password_hash = @password_hash::TEXT,
-           first_name    = @first_name::TEXT,
-           last_name     = @last_name::TEXT,
-           locale        = @locale::TEXT,
-           timezone      = @timezone::TEXT,
-           updated_at    = now()
+       SET email      = @email::TEXT,
+           first_name = @first_name::TEXT,
+           last_name  = @last_name::TEXT,
+           locale     = @locale::TEXT,
+           timezone   = @timezone::TEXT,
+           updated_at = now()
      WHERE id = @id::TEXT
  RETURNING *;
 

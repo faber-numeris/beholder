@@ -2,55 +2,62 @@ package postgresadapter
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"testing"
-	"time"
 
-	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/faber-numeris/beholder/authn/internal/adapters/outbound/postgres/gen"
 	"github.com/faber-numeris/beholder/authn/internal/core/domain"
 	outboundport "github.com/faber-numeris/beholder/authn/internal/ports/outbound"
-	"github.com/jmoiron/sqlx"
+	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/stretchr/testify/assert"
 )
 
-func setupTestDB(t *testing.T) (*sqlx.DB, sqlmock.Sqlmock) {
-	db, mock, err := sqlmock.New()
-	if err != nil {
-		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
-	}
-	sqlxDB := sqlx.NewDb(db, "postgres")
-	return sqlxDB, mock
-}
-
 func TestUserRepository_CreateUser(t *testing.T) {
-	sqlxDB, mock := setupTestDB(t)
-	repo := NewUserRepository(sqlxDB)
-	ctx := context.Background()
 	user := &domain.User{Email: "test@example.com"}
 	passwordHash := "hashed"
 
 	t.Run("success", func(t *testing.T) {
-		rows := sqlmock.NewRows([]string{"id", "email", "password_hash", "first_name", "last_name", "locale", "timezone", "created_at", "updated_at", "deleted_at"}).
-			AddRow("123", user.Email, []byte(passwordHash), "", "", "", "", time.Now(), time.Now(), nil)
+		q := &fakeQuerier{
+			createUserFn: func(ctx context.Context, arg gen.CreateUserParams) (gen.User, error) {
+				assert.Equal(t, user.Email, arg.Email)
+				assert.Equal(t, passwordHash, arg.PasswordHash)
+				return gen.User{ID: "123", Email: user.Email}, nil
+			},
+		}
+		repo := NewUserRepository(q)
 
-		mock.ExpectQuery("INSERT INTO users").
-			WithArgs(user.Email, passwordHash).
-			WillReturnRows(rows)
-
-		res, err := repo.CreateUser(ctx, user, passwordHash)
+		res, err := repo.CreateUser(context.Background(), user, passwordHash)
 
 		assert.NoError(t, err)
 		assert.Equal(t, user.Email, res.Email)
 		assert.Equal(t, "123", res.ID)
 	})
 
-	t.Run("error", func(t *testing.T) {
-		mock.ExpectQuery("INSERT INTO users").
-			WithArgs(user.Email, passwordHash).
-			WillReturnError(errors.New("db error"))
+	t.Run("already exists", func(t *testing.T) {
+		q := &fakeQuerier{
+			createUserFn: func(ctx context.Context, arg gen.CreateUserParams) (gen.User, error) {
+				return gen.User{}, &pgconn.PgError{Code: pgerrcode.UniqueViolation}
+			},
+		}
+		repo := NewUserRepository(q)
 
-		res, err := repo.CreateUser(ctx, user, passwordHash)
+		res, err := repo.CreateUser(context.Background(), user, passwordHash)
+
+		assert.ErrorIs(t, err, domain.ErrUserAlreadyExists)
+		assert.Nil(t, res)
+	})
+
+	t.Run("error", func(t *testing.T) {
+		q := &fakeQuerier{
+			createUserFn: func(ctx context.Context, arg gen.CreateUserParams) (gen.User, error) {
+				return gen.User{}, errors.New("db error")
+			},
+		}
+		repo := NewUserRepository(q)
+
+		res, err := repo.CreateUser(context.Background(), user, passwordHash)
 
 		assert.Error(t, err)
 		assert.Nil(t, res)
@@ -58,30 +65,29 @@ func TestUserRepository_CreateUser(t *testing.T) {
 }
 
 func TestUserRepository_GetUserByID(t *testing.T) {
-	sqlxDB, mock := setupTestDB(t)
-	repo := NewUserRepository(sqlxDB)
-	ctx := context.Background()
-
 	t.Run("success", func(t *testing.T) {
-		rows := sqlmock.NewRows([]string{"id", "email", "password_hash", "first_name", "last_name", "locale", "timezone", "created_at", "updated_at", "deleted_at"}).
-			AddRow("123", "test@example.com", "hash", "", "", "", "", time.Now(), time.Now(), nil)
+		q := &fakeQuerier{
+			getUserFn: func(ctx context.Context, id string) (gen.User, error) {
+				return gen.User{ID: "123", Email: "test@example.com"}, nil
+			},
+		}
+		repo := NewUserRepository(q)
 
-		mock.ExpectQuery("SELECT .* FROM users WHERE id =").
-			WithArgs("123").
-			WillReturnRows(rows)
-
-		res, err := repo.GetUserByID(ctx, "123")
+		res, err := repo.GetUserByID(context.Background(), "123")
 
 		assert.NoError(t, err)
 		assert.Equal(t, "123", res.ID)
 	})
 
 	t.Run("not found", func(t *testing.T) {
-		mock.ExpectQuery("SELECT .* FROM users WHERE id = ?").
-			WithArgs("404").
-			WillReturnError(sql.ErrNoRows)
+		q := &fakeQuerier{
+			getUserFn: func(ctx context.Context, id string) (gen.User, error) {
+				return gen.User{}, pgx.ErrNoRows
+			},
+		}
+		repo := NewUserRepository(q)
 
-		res, err := repo.GetUserByID(ctx, "404")
+		res, err := repo.GetUserByID(context.Background(), "404")
 
 		assert.NoError(t, err)
 		assert.Nil(t, res)
@@ -89,72 +95,85 @@ func TestUserRepository_GetUserByID(t *testing.T) {
 }
 
 func TestUserRepository_GetUserByEmail(t *testing.T) {
-	sqlxDB, mock := setupTestDB(t)
-	repo := NewUserRepository(sqlxDB)
-	ctx := context.Background()
-
 	t.Run("success", func(t *testing.T) {
-		rows := sqlmock.NewRows([]string{"id", "email", "password_hash", "first_name", "last_name", "locale", "timezone", "created_at", "updated_at", "deleted_at"}).
-			AddRow("123", "test@example.com", "hash", "", "", "", "", time.Now(), time.Now(), nil)
+		q := &fakeQuerier{
+			getUserByEmailFn: func(ctx context.Context, email string) (gen.User, error) {
+				return gen.User{ID: "123", Email: email}, nil
+			},
+		}
+		repo := NewUserRepository(q)
 
-		mock.ExpectQuery("SELECT .* FROM users WHERE email = ?").
-			WithArgs("test@example.com").
-			WillReturnRows(rows)
-
-		res, err := repo.GetUserByEmail(ctx, "test@example.com")
+		res, err := repo.GetUserByEmail(context.Background(), "test@example.com")
 
 		assert.NoError(t, err)
 		assert.Equal(t, "test@example.com", res.Email)
 	})
 }
 
+func TestUserRepository_GetUserCredentials(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		q := &fakeQuerier{
+			getUserByEmailFn: func(ctx context.Context, email string) (gen.User, error) {
+				return gen.User{Email: email, PasswordHash: "hash"}, nil
+			},
+		}
+		repo := NewUserRepository(q)
+
+		res, err := repo.GetUserCredentials(context.Background(), "test@example.com")
+
+		assert.NoError(t, err)
+		assert.Equal(t, "hash", res.PasswordHash)
+	})
+}
+
 func TestUserRepository_UpdateUser(t *testing.T) {
-	sqlxDB, mock := setupTestDB(t)
-	repo := NewUserRepository(sqlxDB)
-	ctx := context.Background()
 	user := &domain.User{ID: "123", Email: "new@example.com"}
 
 	t.Run("success", func(t *testing.T) {
-		mock.ExpectExec("UPDATE users SET").
-			WithArgs(user.Email, "", "", "", "", user.ID).
-			WillReturnResult(sqlmock.NewResult(0, 1))
+		q := &fakeQuerier{
+			updateUserFn: func(ctx context.Context, arg gen.UpdateUserParams) (gen.User, error) {
+				assert.Equal(t, user.ID, arg.ID)
+				assert.Equal(t, user.Email, arg.Email)
+				return gen.User{ID: user.ID, Email: user.Email}, nil
+			},
+		}
+		repo := NewUserRepository(q)
 
-		err := repo.UpdateUser(ctx, user)
+		err := repo.UpdateUser(context.Background(), user)
 
 		assert.NoError(t, err)
 	})
 }
 
 func TestUserRepository_DeleteUser(t *testing.T) {
-	sqlxDB, mock := setupTestDB(t)
-	repo := NewUserRepository(sqlxDB)
-	ctx := context.Background()
-
 	t.Run("success", func(t *testing.T) {
-		mock.ExpectExec("UPDATE users SET deleted_at = NOW").
-			WithArgs("123").
-			WillReturnResult(sqlmock.NewResult(0, 1))
+		q := &fakeQuerier{
+			deleteUserFn: func(ctx context.Context, id string) error {
+				assert.Equal(t, "123", id)
+				return nil
+			},
+		}
+		repo := NewUserRepository(q)
 
-		err := repo.DeleteUser(ctx, "123")
+		err := repo.DeleteUser(context.Background(), "123")
 
 		assert.NoError(t, err)
 	})
 }
 
 func TestUserRepository_ListUsers(t *testing.T) {
-	sqlxDB, mock := setupTestDB(t)
-	repo := NewUserRepository(sqlxDB)
-	ctx := context.Background()
-
 	t.Run("success", func(t *testing.T) {
-		rows := sqlmock.NewRows([]string{"id", "email", "password_hash", "first_name", "last_name", "locale", "timezone", "created_at", "updated_at", "deleted_at"}).
-			AddRow("1", "1@ex.com", "h", "", "", "", "", time.Now(), time.Now(), nil).
-			AddRow("2", "2@ex.com", "h", "", "", "", "", time.Now(), time.Now(), nil)
+		q := &fakeQuerier{
+			listUsersFn: func(ctx context.Context, arg gen.ListUsersParams) ([]gen.User, error) {
+				return []gen.User{
+					{ID: "1", Email: "1@ex.com"},
+					{ID: "2", Email: "2@ex.com"},
+				}, nil
+			},
+		}
+		repo := NewUserRepository(q)
 
-		mock.ExpectQuery("SELECT .* FROM users").
-			WillReturnRows(rows)
-
-		res, err := repo.ListUsers(ctx, &outboundport.ListUsersParams{Active: true})
+		res, err := repo.ListUsers(context.Background(), &outboundport.ListUsersParams{Active: true})
 
 		assert.NoError(t, err)
 		assert.Len(t, res, 2)
@@ -162,17 +181,23 @@ func TestUserRepository_ListUsers(t *testing.T) {
 }
 
 func TestUserRepository_UpdatePassword(t *testing.T) {
-	sqlxDB, mock := setupTestDB(t)
-	repo := NewUserRepository(sqlxDB)
-	ctx := context.Background()
-
 	t.Run("success", func(t *testing.T) {
-		mock.ExpectExec("UPDATE users SET password_hash =").
-			WithArgs("hash", "123").
-			WillReturnResult(sqlmock.NewResult(0, 1))
+		q := &fakeQuerier{
+			updatePasswordFn: func(ctx context.Context, arg gen.UpdatePasswordParams) error {
+				assert.Equal(t, "123", arg.Userid)
+				assert.Equal(t, "hash", arg.Passwordhash)
+				return nil
+			},
+		}
+		repo := NewUserRepository(q)
 
-		err := repo.UpdatePassword(ctx, "123", "hash")
+		err := repo.UpdatePassword(context.Background(), "123", "hash")
 
 		assert.NoError(t, err)
 	})
+}
+
+func TestUserRepository_Ping(t *testing.T) {
+	assert.True(t, (&userRepository{db: &fakeQuerier{}}).Ping())
+	assert.False(t, (&userRepository{}).Ping())
 }

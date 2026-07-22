@@ -13,18 +13,40 @@ import (
 )
 
 const createUser = `-- name: CreateUser :one
-INSERT INTO users(email, password_hash)
-     VALUES ($1::TEXT, $2::TEXT)
-  RETURNING id, email, password_hash, first_name, last_name, locale, timezone, created_at, updated_at, deleted_at
+    INSERT INTO users(
+                      email,
+                      password_hash,
+                      first_name,
+                      last_name,
+                      locale,
+                      timezone)
+    VALUES ($1::TEXT,
+            $2::TEXT,
+            $3::TEXT,
+            $4::TEXT,
+            $5::TEXT,
+            $6::TEXT)
+    RETURNING id, email, password_hash, first_name, last_name, locale, timezone, created_at, updated_at, deleted_at
 `
 
 type CreateUserParams struct {
 	Email        string `json:"email"`
 	PasswordHash string `json:"password_hash"`
+	FirstName    string `json:"first_name"`
+	LastName     string `json:"last_name"`
+	Locale       string `json:"locale"`
+	Timezone     string `json:"timezone"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
-	row := q.db.QueryRow(ctx, createUser, arg.Email, arg.PasswordHash)
+	row := q.db.QueryRow(ctx, createUser,
+		arg.Email,
+		arg.PasswordHash,
+		arg.FirstName,
+		arg.LastName,
+		arg.Locale,
+		arg.Timezone,
+	)
 	var i User
 	err := row.Scan(
 		&i.ID,
@@ -132,8 +154,8 @@ const listUsers = `-- name: ListUsers :many
 
 type ListUsersParams struct {
 	Email             pgtype.Text `json:"email"`
-	CreatedStartRange time.Time   `json:"created_start_range"`
-	CreatedEndRange   time.Time   `json:"created_end_range"`
+	CreatedStartRange *time.Time  `json:"created_start_range"`
+	CreatedEndRange   *time.Time  `json:"created_end_range"`
 	Active            bool        `json:"active"`
 }
 
@@ -192,31 +214,28 @@ func (q *Queries) UpdatePassword(ctx context.Context, arg UpdatePasswordParams) 
 
 const updateUser = `-- name: UpdateUser :one
     UPDATE users
-       SET        email         = $1::TEXT,
-           password_hash = $2::TEXT,
-           first_name    = $3::TEXT,
-           last_name     = $4::TEXT,
-           locale        = $5::TEXT,
-           timezone      = $6::TEXT,
-           updated_at    = now()
-     WHERE id = $7::TEXT
+       SET email      = $1::TEXT,
+           first_name = $2::TEXT,
+           last_name  = $3::TEXT,
+           locale     = $4::TEXT,
+           timezone   = $5::TEXT,
+           updated_at = now()
+     WHERE id = $6::TEXT
  RETURNING id, email, password_hash, first_name, last_name, locale, timezone, created_at, updated_at, deleted_at
 `
 
 type UpdateUserParams struct {
-	Email        string `json:"email"`
-	PasswordHash string `json:"password_hash"`
-	FirstName    string `json:"first_name"`
-	LastName     string `json:"last_name"`
-	Locale       string `json:"locale"`
-	Timezone     string `json:"timezone"`
-	ID           string `json:"id"`
+	Email     string `json:"email"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Locale    string `json:"locale"`
+	Timezone  string `json:"timezone"`
+	ID        string `json:"id"`
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
 	row := q.db.QueryRow(ctx, updateUser,
 		arg.Email,
-		arg.PasswordHash,
 		arg.FirstName,
 		arg.LastName,
 		arg.Locale,
