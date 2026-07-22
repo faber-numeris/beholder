@@ -40,37 +40,28 @@ SELECT *
 
 -- name: CreateUser :one
     INSERT INTO users(
-                      id,
                       email,
                       password_hash,
                       first_name,
                       last_name,
                       locale,
-                      timezone,
-                      created_at,
-                      updated_at,
-                      deleted_at)
-    VALUES (@id::TEXT,
-            @email::TEXT,
+                      timezone)
+    VALUES (@email::TEXT,
             @password_hash::TEXT,
             @first_name::TEXT,
             @last_name::TEXT,
             @locale::TEXT,
-            @timezone::TEXT,
-            @created_at::TIMESTAMPTZ,
-            @updated_at::TIMESTAMPTZ,
-            @deleted_at::TIMESTAMPTZ)
+            @timezone::TEXT)
     RETURNING *;
 
 -- name: UpdateUser :one
     UPDATE users
-       SET email         = @email::TEXT,
-           password_hash = @password_hash::TEXT,
-           first_name    = @first_name::TEXT,
-           last_name     = @last_name::TEXT,
-           locale        = @locale::TEXT,
-           timezone      = @timezone::TEXT,
-           updated_at    = now()
+       SET email      = @email::TEXT,
+           first_name = @first_name::TEXT,
+           last_name  = @last_name::TEXT,
+           locale     = @locale::TEXT,
+           timezone   = @timezone::TEXT,
+           updated_at = now()
      WHERE id = @id::TEXT
  RETURNING *;
 

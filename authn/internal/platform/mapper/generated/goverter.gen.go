@@ -19,14 +19,10 @@ func (c *ConverterImpl) UserConfirmationModelFromSQLC(source gen.UserConfirmatio
 	domainUserConfirmation.ID = extensions.StringToULID(source.ID)
 	domainUserConfirmation.UserID = extensions.StringToULID(source.UserID)
 	domainUserConfirmation.Token = extensions.StringToULID(source.Token)
-	domainUserConfirmation.ExpiresAt = c.timeTimeToTimeTime(source.ExpiresAt)
-	pTimeTime, err := extensions.TimeToTimePtr(source.ConfirmedAt)
-	if err != nil {
-		return domainUserConfirmation, err
-	}
-	domainUserConfirmation.ConfirmedAt = pTimeTime
-	domainUserConfirmation.CreatedAt = c.timeTimeToTimeTime(source.CreatedAt)
-	domainUserConfirmation.UpdatedAt = c.timeTimeToTimeTime(source.UpdatedAt)
+	domainUserConfirmation.ExpiresAt = source.ExpiresAt
+	domainUserConfirmation.ConfirmedAt = source.ConfirmedAt
+	domainUserConfirmation.CreatedAt = c.pTimeTimeToTimeTime(source.CreatedAt)
+	domainUserConfirmation.UpdatedAt = c.pTimeTimeToTimeTime(source.UpdatedAt)
 	return domainUserConfirmation, nil
 }
 func (c *ConverterImpl) UserCredentialsModelFromSQLC(source gen.User) (domain.UserCredentials, error) {
@@ -145,6 +141,10 @@ func (c *ConverterImpl) apiUserCreateRequestToPDomainUserProfile(source api.User
 	domainUserProfile.Timezone = xstring4
 	return &domainUserProfile, nil
 }
-func (c *ConverterImpl) timeTimeToTimeTime(source time.Time) time.Time {
-	return source
+func (c *ConverterImpl) pTimeTimeToTimeTime(source *time.Time) time.Time {
+	var timeTime time.Time
+	if source != nil {
+		timeTime = (*source)
+	}
+	return timeTime
 }

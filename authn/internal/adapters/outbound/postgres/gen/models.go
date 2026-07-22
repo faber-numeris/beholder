@@ -9,24 +9,24 @@ import (
 )
 
 type User struct {
-	ID           string    `json:"id"`
-	Email        string    `json:"email"`
-	PasswordHash string    `json:"password_hash"`
-	FirstName    string    `json:"first_name"`
-	LastName     string    `json:"last_name"`
-	Locale       string    `json:"locale"`
-	Timezone     string    `json:"timezone"`
-	CreatedAt    time.Time `json:"created_at"`
-	UpdatedAt    time.Time `json:"updated_at"`
-	DeletedAt    time.Time `json:"deleted_at"`
+	ID           string     `json:"id"`
+	Email        string     `json:"email"`
+	PasswordHash string     `json:"password_hash"`
+	FirstName    string     `json:"first_name"`
+	LastName     string     `json:"last_name"`
+	Locale       string     `json:"locale"`
+	Timezone     string     `json:"timezone"`
+	CreatedAt    *time.Time `json:"created_at"`
+	UpdatedAt    *time.Time `json:"updated_at"`
+	DeletedAt    *time.Time `json:"deleted_at"`
 }
 
 type UserConfirmation struct {
-	ID          string    `json:"id"`
-	UserID      string    `json:"user_id"`
-	Token       string    `json:"token"`
-	ExpiresAt   time.Time `json:"expires_at"`
-	ConfirmedAt time.Time `json:"confirmed_at"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	ID          string     `json:"id"`
+	UserID      string     `json:"user_id"`
+	Token       string     `json:"token"`
+	ExpiresAt   time.Time  `json:"expires_at"`
+	ConfirmedAt *time.Time `json:"confirmed_at"`
+	CreatedAt   *time.Time `json:"created_at"`
+	UpdatedAt   *time.Time `json:"updated_at"`
 }
