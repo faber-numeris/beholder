@@ -22,6 +22,19 @@ http:
 
 runtime:
   scripts:
+    - type: after-response
+      code: |-
+        const setCookieHeader = res.getHeader('set-cookie');
+
+        if (!setCookieHeader) return null;
+
+        // Convert header to string (in case Bruno returns an array of cookie headers)
+        const cookieStr = Array.isArray(setCookieHeader) ? setCookieHeader.join('; ') : setCookieHeader; 
+        const match = cookieStr.match(/access_token=([^;]+)/);
+        if (match && match[1]) {
+          const token = match[1];    
+          bru.setVar('bearerToken', token);        
+        }
     - type: tests
       code: |-
         test("Token cookie is present in response headers", function() {
