@@ -15,8 +15,8 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/dlclark/regexp2 v1.11.5 h1:Q/sSnsKerHeCkc/jSTNq1oCm7KiVgUMZRDUoRu0JQZQ=
 github.com/dlclark/regexp2 v1.11.5/go.mod h1:DHkYz0B9wPfa6wondMfaivmHpzrQ3v9q8cnmRbL6yW8=
-github.com/faber-numeris/foundation/beholder v0.1.3 h1:HsCdPiyHZp+o5In4rsH5fbkzUOyzyytHk1VlWyZpShI=
-github.com/faber-numeris/foundation/beholder v0.1.3/go.mod h1:NtcOU1VsE9LRatac7dRwR4nAwkbmPfpirN2gVscFQrk=
+github.com/faber-numeris/foundation/beholder v0.4.0 h1:MIBDX2gTjrzDmvYoXDHpp0BM8ekoawI3ff0FS+mx/1s=
+github.com/faber-numeris/foundation/beholder v0.4.0/go.mod h1:NtcOU1VsE9LRatac7dRwR4nAwkbmPfpirN2gVscFQrk=
 github.com/getkin/kin-openapi v0.140.0 h1:JFn675aXRFjyiZKa/BFWploGldQlI0gobp4J5k0EZ2g=
 github.com/getkin/kin-openapi v0.140.0/go.mod h1:lISrB64F0CPcuDJ3LdtPTMJBY8VENjR9wJBdrcT6J3g=
 github.com/go-chi/chi/v5 v5.3.1 h1:3j4HZLGZQ3JpMCrPJF/Jl3mYJfWLKBfNJ6quurUGCf8=

@@ -6,7 +6,7 @@ require (
 	github.com/agiledragon/gomonkey/v2 v2.14.1
 	github.com/alexedwards/argon2id v1.0.0
 	github.com/caarlos0/env/v11 v11.4.1
-	github.com/faber-numeris/foundation/beholder v0.1.3
+	github.com/faber-numeris/foundation/beholder v0.4.0
 	github.com/faber-numeris/foundation/testutils v0.0.0-00010101000000-000000000000
 	github.com/go-chi/chi/v5 v5.3.1
 	github.com/go-chi/cors v1.2.2
