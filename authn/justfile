@@ -24,6 +24,11 @@ migrate-all-up:
 migrate-all-down:
 	{{GOOSE}} -dir {{MIGRATION_DIR}} postgres "{{DATABASE_URL}}" down
 
+# Build with the go.work workspace disabled, so dependencies resolve against
+# go.mod/go.sum exactly as they would outside this machine (e.g. in CI).
+build:
+	GOWORK=off go build ./...
+
 test:
 	go test ./...
 

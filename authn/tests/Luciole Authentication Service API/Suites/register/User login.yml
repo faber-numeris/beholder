@@ -1,7 +1,7 @@
 info:
   name: User login
   type: http
-  seq: 6
+  seq: 5
 
 http:
   method: POST
@@ -19,6 +19,39 @@ http:
         "password": "{{password}}"
       }
   auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        const setCookieHeader = res.getHeader('set-cookie');
+
+        if (!setCookieHeader) return null;
+
+        // Convert header to string (in case Bruno returns an array of cookie headers)
+        const cookieStr = Array.isArray(setCookieHeader) ? setCookieHeader.join('; ') : setCookieHeader; 
+        const match = cookieStr.match(/access_token=([^;]+)/);
+        if (match && match[1]) {
+          const token = match[1];    
+          bru.setVar('bearerToken', token);        
+        }
+    - type: tests
+      code: |-
+        test("Token cookie is present in response headers", function() {
+          // Retrieve the Set-Cookie header (returns a string or array depending on server response)
+          const setCookieHeader = res.getHeader('set-cookie');
+          
+          // Ensure the header exists
+          expect(setCookieHeader).to.not.be.undefined;
+          
+          // Convert to string to handle single strings or arrays easily
+          const cookieString = Array.isArray(setCookieHeader) 
+            ? setCookieHeader.join('; ') 
+            : String(setCookieHeader);
+
+          // Assert that the cookie token was successfully created
+          expect(cookieString).to.include('access_token=');
+        });
 
 settings:
   encodeUrl: true

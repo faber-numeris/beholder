@@ -102,7 +102,20 @@ func TestHandler_LoginUser(t *testing.T) {
 		r := httptest.NewRequest(http.MethodPost, "/login", body).WithContext(ctx)
 		handler.LoginUser(w, r)
 
-		assert.Equal(t, http.StatusOK, w.Code)
+		require.Equal(t, http.StatusCreated, w.Code)
+		assert.Equal(t, "no-store", w.Header().Get("Cache-Control"))
+
+		cookies := w.Result().Cookies()
+		require.Len(t, cookies, 1)
+		assert.Equal(t, "access_token", cookies[0].Name)
+		assert.Equal(t, "123", cookies[0].Value)
+		assert.True(t, cookies[0].HttpOnly)
+		assert.True(t, cookies[0].Secure)
+		assert.Equal(t, http.SameSiteStrictMode, cookies[0].SameSite)
+
+		var respBody api.MessageResponse
+		require.NoError(t, json.NewDecoder(w.Body).Decode(&respBody))
+		assert.Equal(t, "Authenticated successfully", respBody.Message)
 	})
 
 	t.Run("unauthorized", func(t *testing.T) {
@@ -119,6 +132,52 @@ func TestHandler_LoginUser(t *testing.T) {
 		assert.Equal(t, http.StatusUnauthorized, w.Code)
 	})
 
+}
+
+func TestHandler_IssueToken(t *testing.T) {
+	ctx := context.Background()
+	req := &api.LoginRequest{
+		Email:    "test@example.com",
+		Password: "password",
+	}
+
+	t.Run("success", func(t *testing.T) {
+		userService := mocks.NewMockUserService(t)
+		handler := NewHandler(userService, nil, NewHealthChecker())
+		userService.EXPECT().VerifyPassword(ctx, "test@example.com", []byte("password")).
+			Return(&domain.UserCredentials{Email: "test@example.com"}, nil)
+		userService.EXPECT().GetUserByEmail(ctx, "test@example.com").
+			Return(&domain.User{ID: "123", Email: "test@example.com"}, nil)
+
+		body := toJSONBody(t, req)
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest(http.MethodPost, "/token", body).WithContext(ctx)
+		handler.IssueToken(w, r)
+
+		require.Equal(t, http.StatusCreated, w.Code)
+		assert.Empty(t, w.Result().Cookies())
+
+		var respBody api.TokenResponse
+		require.NoError(t, json.NewDecoder(w.Body).Decode(&respBody))
+		assert.Equal(t, "123", respBody.AccessToken)
+		assert.Equal(t, "Bearer", respBody.TokenType)
+		assert.Equal(t, 3600, respBody.ExpiresIn)
+		assert.NotEmpty(t, respBody.RefreshToken)
+	})
+
+	t.Run("unauthorized", func(t *testing.T) {
+		userService := mocks.NewMockUserService(t)
+		handler := NewHandler(userService, nil, NewHealthChecker())
+		userService.EXPECT().VerifyPassword(ctx, "test@example.com", []byte("password")).
+			Return(nil, errors.New("invalid"))
+
+		body := toJSONBody(t, req)
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest(http.MethodPost, "/token", body).WithContext(ctx)
+		handler.IssueToken(w, r)
+
+		assert.Equal(t, http.StatusUnauthorized, w.Code)
+	})
 }
 
 func TestHandler_GetUserByID(t *testing.T) {

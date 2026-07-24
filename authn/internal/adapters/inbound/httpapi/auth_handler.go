@@ -1,6 +1,9 @@
 package httpapi
 
 import (
+	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"log/slog"
@@ -167,6 +170,12 @@ func (h *Handler) GetUserProfile(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, apiUser)
 }
 
+const accessTokenTTLSeconds = 3600
+
+// LoginUser authenticates a browser/SPA client and issues the access token as an
+// HttpOnly cookie, never in the response body, so page JavaScript cannot read it
+// (mitigates XSS-based token theft). Mobile and server-to-server clients should use
+// IssueToken instead.
 func (h *Handler) LoginUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	var req foundation.LoginRequest
@@ -178,40 +187,110 @@ func (h *Handler) LoginUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err := h.userService.VerifyPassword(ctx, string(req.Email), []byte(req.Password))
+	accessToken, err := h.authenticate(ctx, string(req.Email), []byte(req.Password))
 	if err != nil {
-		slog.Error("Login failed", "email", req.Email, "error", err)
+		writeAuthError(w, err)
+		return
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "access_token",
+		Value:    accessToken,
+		Path:     "/",
+		MaxAge:   accessTokenTTLSeconds,
+		Secure:   true,
+		HttpOnly: true,
+		SameSite: http.SameSiteStrictMode,
+	})
+	w.Header().Set("Cache-Control", "no-store")
+	writeJSON(w, http.StatusCreated, foundation.MessageResponse{
+		Message: "Authenticated successfully",
+	})
+}
+
+// IssueToken authenticates a mobile or server-to-server client and returns the
+// opaque access token and refresh token in the response body, for clients that
+// store tokens in OS-level secure storage rather than a browser document.
+func (h *Handler) IssueToken(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	var req foundation.LoginRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeJSON(w, http.StatusBadRequest, foundation.Error{
+			Error:   "INVALID_REQUEST",
+			Message: "Invalid request body",
+		})
+		return
+	}
+
+	accessToken, err := h.authenticate(ctx, string(req.Email), []byte(req.Password))
+	if err != nil {
+		writeAuthError(w, err)
+		return
+	}
+
+	refreshToken, err := generateOpaqueToken()
+	if err != nil {
+		slog.Error("Failed to generate refresh token", "error", err)
+		writeJSON(w, http.StatusInternalServerError, foundation.Error{
+			Error:   "INTERNAL_ERROR",
+			Message: "Could not generate refresh token",
+		})
+		return
+	}
+
+	writeJSON(w, http.StatusCreated, foundation.TokenResponse{
+		AccessToken:  accessToken,
+		TokenType:    "Bearer",
+		ExpiresIn:    accessTokenTTLSeconds,
+		RefreshToken: refreshToken,
+	})
+}
+
+// authenticate verifies the given credentials and returns the opaque access token
+// for the authenticated user, or an error suitable for writeAuthError.
+func (h *Handler) authenticate(ctx context.Context, email string, password []byte) (string, error) {
+	_, err := h.userService.VerifyPassword(ctx, email, password)
+	if err != nil {
+		slog.Error("Login failed", "email", email, "error", err)
+		return "", errInvalidCredentials
+	}
+
+	user, err := h.userService.GetUserByEmail(ctx, email)
+	if err != nil || user == nil {
+		return "", errUserLookupFailed
+	}
+
+	return user.ID, nil
+}
+
+var (
+	errInvalidCredentials = errors.New("invalid email or password")
+	errUserLookupFailed   = errors.New("could not retrieve user details")
+)
+
+func writeAuthError(w http.ResponseWriter, err error) {
+	switch {
+	case errors.Is(err, errInvalidCredentials):
 		writeJSON(w, http.StatusUnauthorized, foundation.Error{
 			Error:   "INVALID_CREDENTIALS",
 			Message: "Invalid email or password",
 		})
-		return
-	}
-
-	user, err := h.userService.GetUserByEmail(ctx, string(req.Email))
-	if err != nil || user == nil {
+	default:
 		writeJSON(w, http.StatusInternalServerError, foundation.Error{
 			Error:   "INTERNAL_ERROR",
 			Message: "Could not retrieve user details",
 		})
-		return
 	}
+}
 
-	apiUser, err := converterImpl.UserModelToApiUser(*user)
-	if err != nil {
-		writeJSON(w, http.StatusInternalServerError, foundation.Error{
-			Error:   "INTERNAL_ERROR",
-			Message: "Could not process user response",
-		})
-		return
+// generateOpaqueToken returns a random hex-encoded token, following the same
+// pattern used for confirmation tokens in core/services.
+func generateOpaqueToken() (string, error) {
+	b := make([]byte, 16)
+	if _, err := rand.Read(b); err != nil {
+		return "", err
 	}
-
-	writeJSON(w, http.StatusOK, foundation.LoginResponse{
-		AccessToken: user.ID,
-		TokenType:   "Bearer",
-		ExpiresIn:   3600,
-		User:        apiUser,
-	})
+	return hex.EncodeToString(b), nil
 }
 
 func (h *Handler) LogoutUser(w http.ResponseWriter, r *http.Request) {
